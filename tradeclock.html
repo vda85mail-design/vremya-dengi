@@ -1,0 +1,1972 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Время Деньги">
+<title>Время Деньги</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #020208;
+    --card: #08080f;
+    --card2: #0a0a14;
+    --border: rgba(255,255,255,0.09);
+    --green: #00e676;
+    --purple: #8b5cf6;
+    --orange: #f59e0b;
+    --red: #ef4444;
+    --text: #ffffff;
+    --muted: #6a6a8a;
+    --safe: env(safe-area-inset-bottom, 0px);
+  }
+
+  html, body {
+    background: #000 !important;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: -1;
+  }
+
+  /* SCREENS */
+  .screen { display: none; flex-direction: column; height: 100vh; height: 100dvh; }
+  .screen.active { display: flex; }
+
+  /* TOP BAR */
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 52px 20px 12px;
+    flex-shrink: 0;
+  }
+
+  .topbar-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 0.05em;
+    color: #fff;
+  }
+
+  .topbar-title span { color: var(--green); }
+
+  .live-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0,230,118,0.1);
+    border: 1px solid rgba(0,230,118,0.2);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    color: var(--green);
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: blink 1.2s infinite;
+  }
+
+  @keyframes blink {
+    0%,100% { opacity:1; } 50% { opacity:0.2; }
+  }
+
+  /* SCROLL CONTENT */
+  .scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 16px;
+    padding-bottom: calc(80px + var(--safe));
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .scroll::-webkit-scrollbar { display: none; }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+
+  .card-label {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 10px;
+  }
+
+  /* TIME CARD */
+  .time-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .big-clock {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    color: #fff;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+
+  .clock-tz {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .date-block { text-align: right; }
+
+  .date-day {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 4px;
+  }
+
+  .date-full {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+  }
+
+  /* STAGE CARD */
+  .stage-card {
+    border-radius: 20px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stage-glow {
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .stage-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .stage-name-big {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    line-height: 1;
+    color: #fff;
+  }
+
+  .strength-badge {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    padding: 5px 12px;
+    border-radius: 10px;
+    white-space: nowrap;
+    margin-top: 4px;
+  }
+
+  .stage-desc {
+    font-size: 13px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+
+  .strength-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .str-lbl {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .str-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .str-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  .str-val {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    white-space: nowrap;
+  }
+
+  /* SESSIONS */
+  .session-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: border-color 0.5s;
+  }
+
+  .session-flag { font-size: 28px; line-height: 1; }
+
+  .session-info { flex: 1; min-width: 0; }
+
+  .session-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 2px;
+  }
+
+  .session-city {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+
+  .session-hours {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+  }
+
+  .session-mini-clock {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: #fff;
+    letter-spacing: 0.05em;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+
+  .session-right { text-align: right; flex-shrink: 0; }
+
+  .sess-status {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    padding: 3px 9px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    display: inline-block;
+  }
+
+  .sess-remain {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+  }
+
+  .sess-remain b {
+    color: rgba(255,255,255,0.7);
+    font-weight: 700;
+  }
+
+  /* TIMELINE */
+  .timeline-wrap { padding: 4px 0 8px; }
+
+  .tl-track-wrap {
+    position: relative;
+    height: 10px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 5px;
+    margin-bottom: 8px;
+    overflow: visible;
+  }
+
+  .tl-seg {
+    position: absolute;
+    top: 0; height: 100%;
+    border-radius: 5px;
+    opacity: 0.7;
+  }
+
+  .tl-cursor {
+    position: absolute;
+    top: -5px;
+    width: 3px;
+    height: 20px;
+    background: #fff;
+    border-radius: 2px;
+    transform: translateX(-50%);
+    box-shadow: 0 0 8px rgba(255,255,255,0.6);
+  }
+
+  .tl-labels {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .tl-lbl {
+    font-size: 9px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+  }
+
+  .tl-legend {
+    display: flex;
+    gap: 14px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .tl-leg-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+  }
+
+  .tl-leg-dot {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+  }
+
+  /* SEASON CARD */
+  .season-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .season-mini {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px;
+  }
+
+  .sm-label {
+    font-size: 9px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  .sm-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: #fff;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  .sm-sub {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+  }
+
+  /* MONTHS */
+  .months-grid {
+    display: flex;
+    gap: 4px;
+  }
+
+  .month-cell {
+    flex: 1;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    background: rgba(255,255,255,0.03);
+    gap: 3px;
+  }
+
+  .month-cell.current {
+    background: var(--green);
+    color: #000;
+    font-weight: 700;
+  }
+
+  .month-cell.season-summer { background: rgba(0,230,118,0.12); color: rgba(0,230,118,0.6); }
+  .month-cell.season-active { background: rgba(139,92,246,0.15); color: rgba(139,92,246,0.7); }
+  .month-cell.season-low { background: rgba(245,158,11,0.1); color: rgba(245,158,11,0.5); }
+
+  .month-dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: calc(64px + var(--safe));
+    background: rgba(7,7,15,0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-around;
+    padding-top: 10px;
+    z-index: 100;
+  }
+
+  .nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 4px 20px;
+    cursor: pointer;
+    opacity: 0.35;
+    transition: opacity 0.2s;
+    border: none;
+    background: none;
+    color: inherit;
+  }
+
+  .nav-btn.active { opacity: 1; }
+
+  .nav-icon { font-size: 20px; }
+
+  .nav-lbl {
+    font-size: 9px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+  }
+
+  .nav-btn.active .nav-lbl { color: var(--green); }
+
+  /* WEEKEND BANNER */
+  .weekend-banner {
+    background: rgba(245,158,11,0.1);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: rgba(245,158,11,0.9);
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* ALERTS SCREEN */
+  .alerts-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 16px;
+    padding-bottom: calc(80px + var(--safe));
+  }
+
+  .alert-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .alert-info {}
+  .alert-name { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+  .alert-when { font-size: 11px; font-family: 'Space Mono', monospace; color: var(--muted); }
+
+  .toggle {
+    width: 44px; height: 26px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 13px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.3s;
+    flex-shrink: 0;
+    border: none;
+  }
+
+  .toggle.on { background: var(--green); }
+
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 20px; height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.3s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+
+  .toggle.on::after { transform: translateX(18px); }
+
+  /* SETTINGS SCREEN */
+  .settings-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 16px;
+    padding-bottom: calc(80px + var(--safe));
+  }
+
+  .settings-group {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .settings-row:last-child { border-bottom: none; }
+
+  .srow-label { font-size: 14px; color: #fff; }
+  .srow-value { font-size: 13px; font-family: 'Space Mono', monospace; color: var(--muted); }
+
+  .tz-selector {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+  }
+
+  .tz-btn {
+    padding: 6px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tz-btn.active {
+    background: var(--green);
+    color: #000;
+    border-color: var(--green);
+    font-weight: 700;
+  }
+
+  /* PERIODS LIST */
+  .period-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .period-row:last-child { border-bottom: none; }
+
+  .period-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .period-info { flex: 1; min-width: 0; }
+
+  .period-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 1px;
+  }
+
+  .period-time {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+  }
+
+  .period-right { text-align: right; flex-shrink: 0; }
+
+  .period-countdown {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  .period-status-lbl {
+    font-size: 9px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+  }
+
+  .period-row.is-active {
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    padding: 10px 8px;
+    margin: 0 -8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== SCREEN 1: SESSIONS ===== -->
+<div class="screen active" id="screen-sessions">
+  <div class="topbar">
+    <div class="topbar-title">ВРЕМЯ<span> ДЕНЬГИ</span></div>
+    <div class="live-pill"><div class="live-dot"></div>LIVE</div>
+  </div>
+
+  <div class="scroll">
+
+    <!-- Weekend banner (shown on weekends) -->
+    <div class="weekend-banner" id="weekend-banner" style="display:none">
+      ⚠️ Выходной день — биржи закрыты
+    </div>
+
+    <!-- Time -->
+    <div class="time-card">
+      <div>
+        <div class="big-clock" id="clock-main">--:--:--</div>
+        <div class="clock-tz" id="clock-tz">Москва · UTC+3</div>
+      </div>
+      <div class="date-block">
+        <div class="date-day" id="date-day">---</div>
+        <div class="date-full" id="date-full">--.--</div>
+      </div>
+    </div>
+
+    <!-- Current stage -->
+    <div class="stage-card" id="stage-card">
+      <div class="stage-glow" id="stage-glow"></div>
+      <div class="stage-header">
+        <div>
+          <div class="card-label">Текущий этап</div>
+          <div class="stage-name-big" id="stage-name">—</div>
+        </div>
+        <div class="strength-badge" id="strength-badge">—</div>
+      </div>
+      <div class="stage-desc" id="stage-desc">—</div>
+      <div class="strength-row">
+        <div class="str-lbl">Сила:</div>
+        <div class="str-bar"><div class="str-fill" id="str-fill" style="width:0%"></div></div>
+        <div class="str-val" id="str-val">0%</div>
+      </div>
+    </div>
+
+    <!-- Sessions list -->
+    <div class="card-label" style="padding: 0 4px; margin-bottom:8px">Торговые сессии</div>
+
+    <div id="sessions-list"></div>
+
+    <!-- Periods schedule -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-label">Расписание периодов · сегодня</div>
+      <div id="periods-list"></div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="card">
+      <div class="card-label">График сессий (сутки · МСК)</div>
+      <div class="timeline-wrap">
+        <div class="tl-track-wrap">
+          <!-- Australia 00:00-09:00 = 0/24 to 9/24 -->
+          <div class="tl-seg" style="left:0%;width:37.5%;background:#38bdf8;border-radius:5px 0 0 5px"></div>
+          <!-- Asia 02:00-11:00 = 2/24 to 11/24 -->
+          <div class="tl-seg" style="left:8.3%;width:37.5%;background:#00e676"></div>
+          <!-- Europe 10:00-19:00 = 10/24 to 19/24 -->
+          <div class="tl-seg" style="left:41.6%;width:37.5%;background:#8b5cf6"></div>
+          <!-- America 16:30-23:00 = 16.5/24 to 23/24 -->
+          <div class="tl-seg" style="left:68.75%;width:27%;background:#f59e0b;border-radius:0 5px 5px 0"></div>
+          <div class="tl-cursor" id="tl-cursor" style="left:0%"></div>
+        </div>
+        <div class="tl-labels">
+          <span class="tl-lbl">00</span>
+          <span class="tl-lbl">06</span>
+          <span class="tl-lbl">12</span>
+          <span class="tl-lbl">18</span>
+          <span class="tl-lbl">24</span>
+        </div>
+        <div class="tl-legend">
+          <div class="tl-leg-item"><div class="tl-leg-dot" style="background:#38bdf8"></div>Тихоокеанская</div>
+          <div class="tl-leg-item"><div class="tl-leg-dot" style="background:#00e676"></div>Азия</div>
+          <div class="tl-leg-item"><div class="tl-leg-dot" style="background:#8b5cf6"></div>Европа</div>
+          <div class="tl-leg-item"><div class="tl-leg-dot" style="background:#f59e0b"></div>Америка</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+  </div>
+</div>
+
+<!-- ===== SESSION DETAIL SCREEN ===== -->
+<div class="screen" id="screen-session-detail">
+  <div class="topbar" style="padding-bottom:8px">
+    <button onclick="switchScreen('sessions', document.querySelector('[data-screen=sessions]'))" style="background:rgba(255,255,255,0.08);border:none;color:#fff;border-radius:12px;padding:6px 14px;font-size:13px;cursor:pointer;font-family:'Space Mono',monospace">← Назад</button>
+    <div class="topbar-title" style="font-size:22px" id="detail-title">СЕССИЯ</div>
+    <div style="width:60px"></div>
+  </div>
+  <div class="scroll">
+    <div id="detail-header-card" style="border-radius:20px;padding:18px 20px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.1)">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <div style="font-size:36px" id="detail-flag"></div>
+        <div>
+          <div style="font-size:18px;font-weight:700;color:#fff" id="detail-name"></div>
+          <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)" id="detail-city"></div>
+          <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)" id="detail-hours"></div>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1" id="detail-clock"></div>
+          <div style="font-size:9px;font-family:'Space Mono',monospace;color:var(--muted)" id="detail-status"></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="font-size:10px;font-family:'Space Mono',monospace;color:var(--muted)">Текущая сила:</div>
+        <div style="flex:1;height:4px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden">
+          <div id="detail-strength-bar" style="height:100%;border-radius:2px"></div>
+        </div>
+        <div style="font-size:11px;font-family:'Space Mono',monospace" id="detail-strength-val"></div>
+      </div>
+    </div>
+
+    <div class="card-label" style="padding:0 4px;margin-bottom:8px">Активность по часам · МСК</div>
+    <div id="detail-hours-list"></div>
+  </div>
+</div>
+
+<!-- ===== OTC DETAIL SCREEN ===== -->
+<div class="screen" id="screen-otc-detail">
+  <div class="topbar" style="padding-bottom:8px">
+    <button onclick="document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-otc').classList.add('active')" style="background:rgba(255,255,255,0.08);border:none;color:#fff;border-radius:12px;padding:6px 14px;font-size:13px;cursor:pointer;font-family:'Space Mono',monospace">← Назад</button>
+    <div class="topbar-title" style="font-size:18px" id="otc-detail-title">ПЕРИОД</div>
+    <div style="width:60px"></div>
+  </div>
+  <div class="scroll">
+    <div id="otc-detail-header" style="border-radius:20px;padding:18px 20px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.1)">
+      <div style="margin-bottom:6px">
+        <div style="font-size:18px;font-weight:700;color:#fff" id="otc-detail-name"></div>
+        <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted);margin-top:2px" id="otc-detail-time"></div>
+        <div style="font-size:11px;font-family:'Space Mono',monospace;margin-top:2px" id="otc-detail-status"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+        <div style="font-size:10px;font-family:'Space Mono',monospace;color:var(--muted)">Сила:</div>
+        <div style="flex:1;height:4px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden">
+          <div id="otc-detail-bar" style="height:100%;border-radius:2px"></div>
+        </div>
+        <div style="font-size:11px;font-family:'Space Mono',monospace" id="otc-detail-pct"></div>
+      </div>
+    </div>
+    <div class="card-label" style="padding:0 4px;margin-bottom:8px">Активность по часам</div>
+    <div id="otc-detail-hours"></div>
+  </div>
+</div>
+
+<div class="screen" id="screen-otc">
+  <div class="topbar" style="padding-bottom:8px">
+    <button onclick="switchScreen('sessions', document.querySelector('[data-screen=sessions]'))" style="background:rgba(255,255,255,0.08);border:none;color:#fff;border-radius:12px;padding:6px 14px;font-size:13px;cursor:pointer;font-family:'Space Mono',monospace">← Назад</button>
+    <div class="topbar-title" style="font-size:22px">ОТС <span>РЫНОК</span></div>
+    <div style="width:60px"></div>
+  </div>
+
+  <div class="scroll">
+
+    <!-- Info card -->
+    <div class="card" style="background:rgba(244,63,94,0.08);border-color:rgba(244,63,94,0.25);margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="font-size:24px">🌐</div>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:#fff">Внебиржевой рынок</div>
+          <div style="font-size:11px;font-family:'Space Mono',monospace;color:rgba(244,63,94,0.8)">работает 24/7 включая выходные</div>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#f43f5e;line-height:1" id="otc-clock">--:--</div>
+          <div style="font-size:9px;font-family:'Space Mono',monospace;color:var(--muted)" id="otc-tz">МСК</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.5">ОТС торгуется напрямую между участниками без биржи. Доступен на Pocket Option и других брокерах.</div>
+    </div>
+
+    <!-- Current OTC state -->
+    <div id="otc-state-card" style="border-radius:20px;padding:18px 20px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.1)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div style="font-size:10px;font-family:'Space Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:4px">Сейчас на ОТС</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:#fff;line-height:1" id="otc-state-name">—</div>
+        </div>
+        <div id="otc-state-badge" style="font-size:11px;font-family:'Space Mono',monospace;padding:5px 12px;border-radius:10px">—</div>
+      </div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:12px" id="otc-state-desc">—</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="font-size:10px;font-family:'Space Mono',monospace;color:var(--muted);white-space:nowrap">Волатильность:</div>
+        <div style="flex:1;height:4px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden">
+          <div id="otc-state-bar" style="height:100%;border-radius:2px;transition:width 1s ease"></div>
+        </div>
+        <div style="font-size:11px;font-family:'Space Mono',monospace" id="otc-state-pct">0%</div>
+      </div>
+      <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)" id="otc-state-remain">—</div>
+    </div>
+
+    <div class="card-label" style="padding:0 4px;margin-bottom:8px">Все периоды · МСК</div>
+
+    <div id="otc-periods-list"></div>
+
+    <div class="card" style="margin-top:4px">
+      <div class="card-label">Рекомендации</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="font-size:16px">🔥</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5"><b style="color:#fff">Лучшее время:</b> <span id="otc-best-time"></span> — перекрытие Европы и США, максимальные объёмы даже на ОТС</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="font-size:16px">⚠️</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5"><b style="color:#fff">Осторожно:</b> 00:00–02:00 МСК — минимальная ликвидность, непредсказуемые движения</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="font-size:16px">📅</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5"><b style="color:#fff">Выходные:</b> волатильность снижена на 30–40%, спреды шире — торгуй осторожнее</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== SCREEN 2: SEASON ===== -->
+<div class="screen" id="screen-season">
+  <div class="topbar">
+    <div class="topbar-title">СЕЗОН<span>НОСТЬ</span></div>
+  </div>
+
+  <div class="scroll">
+
+    <div class="season-row">
+      <div class="season-mini">
+        <div class="sm-label">Сезон</div>
+        <div class="sm-value" id="season-name">—</div>
+        <div class="sm-sub" id="season-dates">—</div>
+      </div>
+      <div class="season-mini">
+        <div class="sm-label">Характер</div>
+        <div class="sm-value" id="season-char">—</div>
+        <div class="sm-sub" id="season-char-sub">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Описание периода</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6" id="season-desc">—</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Календарь сезонов</div>
+      <div class="months-grid" id="months-grid"></div>
+    </div>
+
+    <div class="season-row">
+      <div class="season-mini">
+        <div class="sm-label">До конца сезона</div>
+        <div class="sm-value" id="days-left">—</div>
+        <div class="sm-sub">дней</div>
+      </div>
+      <div class="season-mini">
+        <div class="sm-label">Следующий</div>
+        <div class="sm-value" id="next-season">—</div>
+        <div class="sm-sub" id="next-season-sub">—</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ===== SCREEN 3: ALERTS ===== -->
+<div class="screen" id="screen-alerts">
+  <div class="topbar">
+    <div class="topbar-title">АЛЕ<span>РТЫ</span></div>
+  </div>
+  <div class="alerts-content">
+    <div style="font-size:12px;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:16px">
+      Уведомления об открытии сессий
+    </div>
+    <div class="alert-item">
+      <div class="alert-info">
+        <div class="alert-name">🇦🇺 Тихоокеанская открывается</div>
+        <div class="alert-when">00:00 МСК</div>
+      </div>
+      <button class="toggle" onclick="this.classList.toggle('on')"></button>
+    </div>
+    <div class="alert-item">
+      <div class="alert-info">
+        <div class="alert-name">🇯🇵 Азия открывается</div>
+        <div class="alert-when">02:00 МСК</div>
+      </div>
+      <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+    </div>
+    <div class="alert-item">
+      <div class="alert-info">
+        <div class="alert-name">🇬🇧 Европа открывается</div>
+        <div class="alert-when">10:00 МСК</div>
+      </div>
+      <button class="toggle" onclick="this.classList.toggle('on')"></button>
+    </div>
+    <div class="alert-item">
+      <div class="alert-info">
+        <div class="alert-name">🇺🇸 Нью-Йорк открывается</div>
+        <div class="alert-when">16:30 МСК</div>
+      </div>
+      <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+    </div>
+    <div class="alert-item">
+      <div class="alert-info">
+        <div class="alert-name">⚡ Перекрытие Европа+США</div>
+        <div class="alert-when">16:30–19:00 МСК</div>
+      </div>
+      <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+    </div>
+    <div class="alert-item">
+      <div class="alert-info">
+        <div class="alert-name">🌙 Все сессии закрыты</div>
+        <div class="alert-when">23:00 МСК</div>
+      </div>
+      <button class="toggle" onclick="this.classList.toggle('on')"></button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN 4: SETTINGS ===== -->
+<div class="screen" id="screen-settings">
+  <div class="topbar">
+    <div class="topbar-title">НАС<span>ТРОЙКИ</span></div>
+  </div>
+  <div class="settings-content">
+    <div style="font-size:10px;font-family:'Space Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:8px">Часовой пояс</div>
+    <div class="settings-group">
+      <div class="tz-selector" id="tz-selector">
+        <button class="tz-btn active" data-offset="3" data-name="Москва">МСК +3</button>
+        <button class="tz-btn" data-offset="5" data-name="Екатеринбург">ЕКБ +5</button>
+        <button class="tz-btn" data-offset="7" data-name="Красноярск">КРС +7</button>
+        <button class="tz-btn" data-offset="8" data-name="Иркутск">ИРК +8</button>
+        <button class="tz-btn" data-offset="10" data-name="Владивосток">VVO +10</button>
+        <button class="tz-btn" data-offset="0" data-name="UTC">UTC +0</button>
+      </div>
+    </div>
+
+    <div style="font-size:10px;font-family:'Space Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:8px">О приложении</div>
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="srow-label">Время Деньги</div>
+        <div class="srow-value">v2.0</div>
+      </div>
+      <div class="settings-row">
+        <div class="srow-label">Рынки</div>
+        <div class="srow-value">Forex / Акции / Опционы / ОТС</div>
+      </div>
+      <div class="settings-row">
+        <div class="srow-label">Обновление</div>
+        <div class="srow-value">каждую сек.</div>
+      </div>
+      <div class="settings-row">
+        <div class="srow-label">Разработчик</div>
+        <div class="srow-value" style="font-size:11px;text-align:right">Викулов Денис<br>Анатольевич</div>
+      </div>
+      <div class="settings-row">
+        <div class="srow-label">Email</div>
+        <div class="srow-value" style="font-size:10px">vda85.mail@gmail.com</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn active" data-screen="sessions" onclick="switchScreen('sessions', this)">
+    <div class="nav-icon">⏱</div>
+    <div class="nav-lbl">сессии</div>
+  </button>
+  <button class="nav-btn" data-screen="season" onclick="switchScreen('season', this)">
+    <div class="nav-icon">📅</div>
+    <div class="nav-lbl">сезон</div>
+  </button>
+  <button class="nav-btn" data-screen="alerts" onclick="switchScreen('alerts', this)">
+    <div class="nav-icon">🔔</div>
+    <div class="nav-lbl">алерты</div>
+  </button>
+  <button class="nav-btn" data-screen="settings" onclick="switchScreen('settings', this)">
+    <div class="nav-icon">⚙️</div>
+    <div class="nav-lbl">настройки</div>
+  </button>
+</div>
+
+<script>
+// ===== CONFIG =====
+let userOffset = 3; // Default Moscow UTC+3
+let userName = 'Москва';
+
+const SESSIONS = [
+  {
+    id: 'otc',
+    name: 'ОТС',
+    city: 'Внебиржевой',
+    flag: '🌐',
+    open: 0,
+    close: 24 * 60,
+    tzOffset: 0,
+    color: '#f43f5e',
+    colorBg: 'rgba(244,63,94,0.08)',
+    colorBorder: 'rgba(244,63,94,0.2)',
+    alwaysOpen: true,
+  },
+  {
+    id: 'pacific',
+    name: 'Тихоокеанская',
+    city: 'Сидней',
+    flag: '🇦🇺',
+    open: 0 * 60,     // 00:00 MSK
+    close: 9 * 60,    // 09:00 MSK
+    tzOffset: 10,     // AEST UTC+10
+    color: '#38bdf8',
+    colorBg: 'rgba(56,189,248,0.08)',
+    colorBorder: 'rgba(56,189,248,0.2)',
+  },
+  {
+    id: 'asia',
+    name: 'Азия',
+    city: 'Токио',
+    flag: '🇯🇵',
+    open: 2 * 60,   // 02:00 MSK
+    close: 11 * 60, // 11:00 MSK
+    tzOffset: 9,    // JST UTC+9
+    color: '#00e676',
+    colorBg: 'rgba(0,230,118,0.08)',
+    colorBorder: 'rgba(0,230,118,0.2)',
+  },
+  {
+    id: 'europe',
+    name: 'Европа',
+    city: 'Лондон',
+    flag: '🇬🇧',
+    open: 10 * 60,  // 10:00 MSK
+    close: 19 * 60, // 19:00 MSK
+    tzOffset: 1,    // BST UTC+1
+    color: '#8b5cf6',
+    colorBg: 'rgba(139,92,246,0.08)',
+    colorBorder: 'rgba(139,92,246,0.25)',
+  },
+  {
+    id: 'america',
+    name: 'Америка',
+    city: 'Нью-Йорк',
+    flag: '🇺🇸',
+    open: 16 * 60 + 30, // 16:30 MSK
+    close: 23 * 60,     // 23:00 MSK
+    tzOffset: -4,       // EDT UTC-4
+    color: '#f59e0b',
+    colorBg: 'rgba(245,158,11,0.06)',
+    colorBorder: 'rgba(245,158,11,0.2)',
+  }
+];
+
+const STAGES = [
+  { name: 'Ночь', desc: 'Все сессии закрыты. Минимальная ликвидность и объёмы. Рекомендуется воздержаться от торговли.', strength: 5, color: '#94a3b8', colorBg: 'rgba(15,15,25,0.95)', colorBorder: 'rgba(100,116,139,0.3)', badge: '💤 Тихо', badgeBg: 'rgba(30,30,50,0.9)', badgeColor: '#94a3b8' },
+  { name: 'Азия', desc: 'Азиатская сессия активна. Умеренные объёмы. Активны валютные пары с JPY, AUD. Спокойное движение.', strength: 35, color: '#00e676', colorBg: 'rgba(0,230,118,0.1)', colorBorder: 'rgba(0,230,118,0.25)', badge: '🟢 Умеренно', badgeBg: 'rgba(0,230,118,0.15)', badgeColor: '#00e676' },
+  { name: 'Европа', desc: 'Европейская сессия. Хорошие объёмы. Активны EUR, GBP, CHF. Тренды формируются именно здесь.', strength: 65, color: '#8b5cf6', colorBg: 'rgba(139,92,246,0.1)', colorBorder: 'rgba(139,92,246,0.3)', badge: '🔵 Активно', badgeBg: 'rgba(139,92,246,0.2)', badgeColor: '#a78bfa' },
+  { name: 'Азия + Европа', desc: 'Перекрытие Азии и Европы. Повышенная волатильность, растущие объёмы — хорошее время для входов.', strength: 70, color: '#06b6d4', colorBg: 'rgba(6,182,212,0.08)', colorBorder: 'rgba(6,182,212,0.25)', badge: '⚡ Сильно', badgeBg: 'rgba(6,182,212,0.2)', badgeColor: '#22d3ee' },
+  { name: 'Европа + США', desc: 'Самый мощный период! Одновременно открыты Лондон и Нью-Йорк. Максимальные объёмы и ликвидность.', strength: 95, color: '#f59e0b', colorBg: 'rgba(245,158,11,0.1)', colorBorder: 'rgba(245,158,11,0.3)', badge: '🔥 MAX', badgeBg: 'rgba(245,158,11,0.2)', badgeColor: '#fbbf24' },
+  { name: 'США', desc: 'Американская сессия. Высокая активность, особенно в первые часы. Активны USD, акции NYSE/NASDAQ.', strength: 70, color: '#f59e0b', colorBg: 'rgba(245,158,11,0.07)', colorBorder: 'rgba(245,158,11,0.2)', badge: '🟡 Высоко', badgeBg: 'rgba(245,158,11,0.15)', badgeColor: '#f59e0b' },
+];
+
+// ===== MSK TO LOCAL TIME CONVERTER =====
+function mskToLocal(mskMinutes) {
+  // Convert MSK minutes to local time string
+  const diffMins = (userOffset - 3) * 60;
+  let localMins = mskMinutes + diffMins;
+  if (localMins < 0) localMins += 24 * 60;
+  if (localMins >= 24 * 60) localMins -= 24 * 60;
+  return pad(Math.floor(localMins / 60)) + ':' + pad(localMins % 60);
+}
+
+function mskRangeToLocal(openMsk, closeMsk) {
+  return mskToLocal(openMsk) + ' — ' + mskToLocal(closeMsk);
+}
+
+function localTzLabel() {
+  return userName + ' UTC' + (userOffset >= 0 ? '+' : '') + userOffset;
+}
+
+const ALL_PERIODS = [
+  { name: 'Тихоокеанская', open: 0*60,    close: 9*60,   color: '#38bdf8', strength: 20 },
+  { name: 'Азия',          open: 2*60,    close: 11*60,  color: '#00e676', strength: 35 },
+  { name: 'Азия + Европа', open: 10*60,   close: 11*60,  color: '#06b6d4', strength: 70 },
+  { name: 'Европа',        open: 11*60,   close: 16*60+30, color: '#8b5cf6', strength: 65 },
+  { name: 'Европа + США',  open: 16*60+30,close: 19*60,  color: '#f59e0b', strength: 95 },
+  { name: 'США',           open: 19*60,   close: 23*60,  color: '#f59e0b', strength: 70 },
+  { name: 'Ночь',          open: 23*60,   close: 24*60,  color: '#64748b', strength: 5  },
+];
+
+function renderPeriods() {
+  const list = document.getElementById('periods-list');
+  if (!list) return;
+  const mskMin = getMskMinutes();
+  const weekend = isWeekend();
+  list.innerHTML = '';
+
+  ALL_PERIODS.forEach(p => {
+    const isActive = !weekend && mskMin >= p.open && mskMin < p.close;
+    const isPast   = weekend ? false : mskMin >= p.close;
+    let countdown = '';
+    let statusLbl = '';
+
+    if (weekend) {
+      countdown = '—';
+      statusLbl = 'выходной';
+    } else if (isActive) {
+      const left = p.close - mskMin;
+      countdown = formatCountdown(left);
+      statusLbl = 'осталось';
+    } else if (isPast) {
+      countdown = 'завтра';
+      statusLbl = pad(Math.floor(p.open/60)) + ':' + pad(p.open%60);
+    } else {
+      const toOpen = p.open - mskMin;
+      countdown = formatCountdown(toOpen);
+      statusLbl = 'через';
+    }
+
+    const row = document.createElement('div');
+    row.className = 'period-row' + (isActive ? ' is-active' : '');
+    row.innerHTML = `
+      <div class="period-dot" style="background:${isPast && !weekend ? 'rgba(255,255,255,0.1)' : p.color};${isActive ? 'box-shadow:0 0 6px '+p.color : ''}"></div>
+      <div class="period-info">
+        <div class="period-name" style="color:${isPast && !weekend ? 'rgba(255,255,255,0.3)' : '#fff'}">${p.name}</div>
+        <div class="period-time">${mskRangeToLocal(p.open, p.close)} · сила ${p.strength}%</div>
+      </div>
+      <div class="period-right">
+        <div class="period-countdown" style="color:${isPast && !weekend ? 'rgba(255,255,255,0.2)' : p.color}">${countdown}</div>
+        <div class="period-status-lbl">${statusLbl}</div>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+const OTC_PERIODS = [
+  { name: 'Ночь (тихо)',         open: 0,    close: 2*60,   color: '#475569', strength: 10, desc: 'Минимальная активность. Лучше не торговать.' },
+  { name: 'Тихоокеанская',       open: 2*60, close: 4*60,   color: '#38bdf8', strength: 20, desc: 'Открытие Сиднея. Низкие объёмы, осторожно.' },
+  { name: 'Азия просыпается',    open: 4*60, close: 10*60,  color: '#00e676', strength: 40, desc: 'Токио активен. Умеренная волатильность.' },
+  { name: 'Азия + Европа',       open: 10*60,close: 11*60,  color: '#06b6d4', strength: 70, desc: 'Перекрытие сессий. Хороший момент для входа.' },
+  { name: 'Европа',              open: 11*60,close: 16*60+30,color: '#8b5cf6', strength: 65, desc: 'Лондон в полную силу. Стабильные тренды.' },
+  { name: 'Европа + США 🔥',     open: 16*60+30,close: 19*60,color: '#f59e0b', strength: 95, desc: 'Лучший период! Максимальные объёмы и движения.' },
+  { name: 'США',                  open: 19*60,close: 23*60,  color: '#fb923c', strength: 70, desc: 'Нью-Йорк активен. Высокая волатильность.' },
+  { name: 'Закрытие США',        open: 23*60,close: 24*60,  color: '#475569', strength: 25, desc: 'Объёмы падают. Осторожно с входами.' },
+];
+
+function renderOtcPeriods() {
+  const list = document.getElementById('otc-periods-list');
+  if (!list) return;
+  const mskMin = getMskMinutes();
+  list.innerHTML = '';
+
+  OTC_PERIODS.forEach(p => {
+    const isActive = mskMin >= p.open && mskMin < p.close;
+    const isPast = mskMin >= p.close;
+    const bars = Math.round(p.strength / 10);
+
+    const card = document.createElement('div');
+    card.style.cssText = `background:${isActive ? 'rgba(255,255,255,0.05)' : 'var(--card)'};border:1px solid ${isActive ? p.color+'55' : 'rgba(255,255,255,0.07)'};border-radius:16px;padding:14px 16px;margin-bottom:8px;${isActive ? 'box-shadow:0 0 20px '+p.color+'22' : ''}`;
+
+    const timeStr = mskRangeToLocal(p.open, p.close === 24*60 ? 0 : p.close) + ' · ' + localTzLabel();
+
+    let countdown = '';
+    if (isActive) {
+      countdown = `<span style="color:${p.color};font-family:'Space Mono',monospace;font-size:11px">● осталось ${formatCountdown(p.close - mskMin)}</span>`;
+    } else if (!isPast) {
+      countdown = `<span style="color:var(--muted);font-family:'Space Mono',monospace;font-size:11px">через ${formatCountdown(p.open - mskMin)}</span>`;
+    } else {
+      countdown = `<span style="color:rgba(255,255,255,0.2);font-family:'Space Mono',monospace;font-size:11px">завтра</span>`;
+    }
+
+    const strengthBars = Array.from({length:10}, (_,i) =>
+      `<div style="width:100%;height:8px;border-radius:2px;background:${i < bars ? p.color : 'rgba(255,255,255,0.06)'}"></div>`
+    ).join('');
+
+    card.style.cursor = 'pointer';
+    card.onclick = () => openOtcDetail(p);
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:${isPast ? 'rgba(255,255,255,0.3)' : '#fff'};margin-bottom:2px">${p.name}</div>
+          <div style="font-size:10px;font-family:'Space Mono',monospace;color:var(--muted)">${timeStr}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:${isPast ? 'rgba(255,255,255,0.15)' : p.color};line-height:1">${p.strength}%</div>
+          <div style="font-size:9px;font-family:'Space Mono',monospace;color:var(--muted)">волатильность</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(10,1fr);gap:2px;margin-bottom:8px">${strengthBars}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);flex:1">${p.desc}</div>
+        <div style="margin-left:10px">${countdown}</div>
+      </div>
+      <div style="font-size:10px;font-family:'Space Mono',monospace;color:rgba(255,255,255,0.2);margin-top:6px;text-align:right">нажми для деталей →</div>
+    `;
+    list.appendChild(card);
+  });
+
+  // Update best time label
+  const bestTimeEl = document.getElementById('otc-best-time');
+  if (bestTimeEl) bestTimeEl.textContent = mskToLocal(10*60) + '–' + mskToLocal(19*60);
+
+  // Update OTC clock
+  const otcClock = document.getElementById('otc-clock');
+  if (otcClock) {
+    const msk = getMskNow();
+    otcClock.textContent = pad(msk.getHours()) + ':' + pad(msk.getMinutes());
+  }
+}
+
+const OTC_PERIOD_HOURS = {
+  'Ночь (тихо)': [
+    { h: 23, strength: 15, desc: 'Закрытие США. Объёмы падают.' },
+    { h: 0,  strength: 10, desc: 'Минимальная активность. Не торговать.' },
+    { h: 1,  strength: 10, desc: 'Рынок почти мёртв.' },
+  ],
+  'Тихоокеанская': [
+    { h: 2,  strength: 20, desc: 'Открытие Сиднея. Осторожно.' },
+    { h: 3,  strength: 25, desc: 'Небольшое оживление.' },
+  ],
+  'Азия просыпается': [
+    { h: 4,  strength: 35, desc: 'Токио набирает обороты.' },
+    { h: 5,  strength: 45, desc: 'Азия активна. JPY, AUD движутся.' },
+    { h: 6,  strength: 50, desc: 'Хорошая активность.' },
+    { h: 7,  strength: 55, desc: 'Устойчивые движения.' },
+    { h: 8,  strength: 50, desc: 'Активность стабильна.' },
+    { h: 9,  strength: 45, desc: 'Подготовка к европейской сессии.' },
+  ],
+  'Азия + Европа': [
+    { h: 10, strength: 70, desc: 'Перекрытие! Рост объёмов. Хороший вход.' },
+  ],
+  'Европа': [
+    { h: 11, strength: 75, desc: 'Лондон в полную силу.' },
+    { h: 12, strength: 72, desc: 'EUR, GBP активны.' },
+    { h: 13, strength: 65, desc: 'Обеденный спад.' },
+    { h: 14, strength: 68, desc: 'Восстановление активности.' },
+    { h: 15, strength: 72, desc: 'Ожидание открытия США.' },
+    { h: 16, strength: 80, desc: 'Рост перед Нью-Йорком.' },
+  ],
+  'Европа + США 🔥': [
+    { h: 16, strength: 90, desc: '🔥 Открытие NYSE + Лондон.' },
+    { h: 17, strength: 95, desc: '🔥 Абсолютный пик! Лучшее время.' },
+    { h: 18, strength: 88, desc: '🔥 Максимальные объёмы.' },
+  ],
+  'США': [
+    { h: 19, strength: 80, desc: 'Европа закрылась. США продолжает.' },
+    { h: 20, strength: 75, desc: 'NYSE активен.' },
+    { h: 21, strength: 68, desc: 'Объёмы снижаются.' },
+    { h: 22, strength: 55, desc: 'К закрытию активность падает.' },
+  ],
+  'Закрытие США': [
+    { h: 23, strength: 25, desc: 'Последний час. Осторожно.' },
+  ],
+};
+
+let currentOtcDetail = null;
+
+function openOtcDetail(period) {
+  currentOtcDetail = period;
+  renderOtcDetail(period);
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-otc-detail').classList.add('active');
+}
+
+function renderOtcDetail(period) {
+  const mskMin = getMskMinutes();
+  const isActive = mskMin >= period.open && mskMin < period.close && !isWeekend();
+  const hours = OTC_PERIOD_HOURS[period.name] || [];
+
+  document.getElementById('otc-detail-title').textContent = period.name.replace(' 🔥','').toUpperCase();
+  document.getElementById('otc-detail-name').textContent = period.name;
+  document.getElementById('otc-detail-time').textContent = mskRangeToLocal(period.open, period.close === 24*60 ? 0 : period.close) + ' · ' + localTzLabel();
+
+  const hCard = document.getElementById('otc-detail-header');
+  hCard.style.background = `rgba(${hexToRgb(period.color)},0.08)`;
+  hCard.style.borderColor = `rgba(${hexToRgb(period.color)},0.3)`;
+
+  const bar = document.getElementById('otc-detail-bar');
+  bar.style.width = period.strength + '%';
+  bar.style.background = `linear-gradient(90deg, ${period.color}, ${period.color}88)`;
+  document.getElementById('otc-detail-pct').textContent = period.strength + '%';
+  document.getElementById('otc-detail-pct').style.color = period.color;
+  document.getElementById('otc-detail-status').textContent = isWeekend() ? 'ВЫХОДНОЙ' : (isActive ? '● АКТИВЕН' : 'ожидается');
+  document.getElementById('otc-detail-status').style.color = isActive ? period.color : 'var(--muted)';
+
+  const list = document.getElementById('otc-detail-hours');
+  list.innerHTML = '';
+  hours.forEach(h => {
+    const isCur = getMskNow().getHours() === h.h && isActive;
+    const isPast = mskMin > (h.h * 60 + 59);
+    const bars = Math.round(h.strength / 10);
+    const card = document.createElement('div');
+    card.style.cssText = `background:${isCur ? 'rgba(255,255,255,0.05)' : 'var(--card)'};border:1px solid ${isCur ? period.color+'55' : 'rgba(255,255,255,0.07)'};border-radius:16px;padding:14px 16px;margin-bottom:8px;${isCur ? 'box-shadow:0 0 20px '+period.color+'22' : ''}`;
+    const strengthBars = Array.from({length:10}, (_,i) =>
+      `<div style="width:100%;height:8px;border-radius:2px;background:${i < bars ? (isPast && !isCur ? 'rgba(255,255,255,0.1)' : period.color) : 'rgba(255,255,255,0.06)'}"></div>`
+    ).join('');
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:${isPast && !isCur ? 'rgba(255,255,255,0.3)' : '#fff'};line-height:1">${mskToLocal(h.h*60)} — ${mskToLocal((h.h+1)*60)}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,${isPast && !isCur ? '0.3' : '0.5'});margin-top:2px">${h.desc}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${isPast && !isCur ? 'rgba(255,255,255,0.2)' : period.color};line-height:1">${h.strength}%</div>
+          <div style="font-size:9px;font-family:'Space Mono',monospace;color:var(--muted)">${isCur ? '● сейчас' : (isPast ? 'прошло' : 'ожидается')}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(10,1fr);gap:2px">${strengthBars}</div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+// ===== GEOLOCATION TIME =====
+let geoTzName = 'МСК';
+let geoTzOffset = 3;
+
+function initGeoTime() {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const now = new Date();
+    const offsetMin = -now.getTimezoneOffset();
+    geoTzOffset = offsetMin / 60;
+    // Shortened timezone name
+    const parts = tz.split('/');
+    geoTzName = parts[parts.length - 1].replace(/_/g, ' ');
+    // Update selector to match if possible
+    document.querySelectorAll('.tz-btn').forEach(b => {
+      if (parseInt(b.dataset.offset) === geoTzOffset) {
+        document.querySelectorAll('.tz-btn').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        userOffset = geoTzOffset;
+        userName = b.dataset.name;
+      }
+    });
+    if (userOffset === 3) { // still default, use geo
+      userOffset = geoTzOffset;
+      userName = geoTzName;
+    }
+    // Update OTC tz label
+    const otcTz = document.getElementById('otc-tz');
+    if (otcTz) otcTz.textContent = geoTzName + ' UTC' + (geoTzOffset >= 0 ? '+' : '') + geoTzOffset;
+  } catch(e) {}
+}
+
+function renderOtcState() {
+  const mskMin = getMskMinutes();
+  const cur = OTC_PERIODS.find(p => mskMin >= p.open && mskMin < p.close) || OTC_PERIODS[0];
+  const weekend = isWeekend();
+
+  const card = document.getElementById('otc-state-card');
+  if (!card) return;
+  card.style.background = `rgba(${hexToRgb(cur.color)},0.08)`;
+  card.style.borderColor = `rgba(${hexToRgb(cur.color)},0.3)`;
+
+  document.getElementById('otc-state-name').textContent = cur.name.replace(' 🔥','');
+  document.getElementById('otc-state-desc').textContent = cur.desc;
+
+  const pct = weekend ? Math.round(cur.strength * 0.65) : cur.strength;
+  const bar = document.getElementById('otc-state-bar');
+  bar.style.width = pct + '%';
+  bar.style.background = `linear-gradient(90deg, ${cur.color}, ${cur.color}88)`;
+  document.getElementById('otc-state-pct').textContent = pct + '%';
+  document.getElementById('otc-state-pct').style.color = cur.color;
+
+  const badge = document.getElementById('otc-state-badge');
+  let badgeText = '';
+  if (pct >= 80) badgeText = '🔥 MAX';
+  else if (pct >= 60) badgeText = '⚡ Высокий';
+  else if (pct >= 35) badgeText = '🟢 Умеренный';
+  else badgeText = '💤 Низкий';
+  if (weekend) badgeText += ' (вых.)';
+  badge.textContent = badgeText;
+  badge.style.background = `rgba(${hexToRgb(cur.color)},0.15)`;
+  badge.style.color = cur.color;
+
+  const remain = cur.close - mskMin;
+  document.getElementById('otc-state-remain').textContent = `До конца периода: ${formatCountdown(remain)}`;
+
+  // OTC clock with user local time
+  const otcClock = document.getElementById('otc-clock');
+  if (otcClock) {
+    const user = getUserNow();
+    otcClock.textContent = pad(user.getHours()) + ':' + pad(user.getMinutes()) + ':' + pad(user.getSeconds());
+  }
+  const otcTz = document.getElementById('otc-tz');
+  if (otcTz) otcTz.textContent = userName + ' UTC' + (userOffset >= 0 ? '+' : '') + userOffset;
+}
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `${r},${g},${b}`;
+}
+
+const SESSION_HOURS = {
+  pacific: [
+    { h: 0,  strength: 55, desc: 'Открытие Сиднея. Первые движения.' },
+    { h: 1,  strength: 60, desc: 'Активность нарастает.' },
+    { h: 2,  strength: 65, desc: 'Пересечение с Азией начинается.' },
+    { h: 3,  strength: 55, desc: 'Умеренная активность.' },
+    { h: 4,  strength: 50, desc: 'Спокойный период.' },
+    { h: 5,  strength: 45, desc: 'Низкая волатильность.' },
+    { h: 6,  strength: 40, desc: 'Минимальная активность.' },
+    { h: 7,  strength: 38, desc: 'Затишье перед закрытием.' },
+    { h: 8,  strength: 35, desc: 'Последний час сессии.' },
+  ],
+  asia: [
+    { h: 2,  strength: 50, desc: 'Открытие Токио. Умеренный старт.' },
+    { h: 3,  strength: 60, desc: 'Активность нарастает. JPY в движении.' },
+    { h: 4,  strength: 65, desc: 'Хороший период для JPY, AUD.' },
+    { h: 5,  strength: 70, desc: 'Пик азиатской сессии.' },
+    { h: 6,  strength: 68, desc: 'Высокая активность.' },
+    { h: 7,  strength: 65, desc: 'Устойчивые движения.' },
+    { h: 8,  strength: 60, desc: 'Активность снижается.' },
+    { h: 9,  strength: 55, desc: 'Подготовка к европейской сессии.' },
+    { h: 10, strength: 70, desc: 'Перекрытие с Европой! Рост объёмов.' },
+  ],
+  europe: [
+    { h: 10, strength: 75, desc: 'Открытие Лондона + перекрытие с Азией.' },
+    { h: 11, strength: 80, desc: 'Лондон в полную силу. Тренды формируются.' },
+    { h: 12, strength: 78, desc: 'Высокая активность. EUR, GBP движутся.' },
+    { h: 13, strength: 72, desc: 'Обеденный спад в Европе.' },
+    { h: 14, strength: 68, desc: 'Умеренная активность.' },
+    { h: 15, strength: 70, desc: 'Активность восстанавливается.' },
+    { h: 16, strength: 80, desc: 'Ожидание открытия США.' },
+    { h: 17, strength: 95, desc: '🔥 Перекрытие Европа+США! Максимум!' },
+    { h: 18, strength: 90, desc: '🔥 Пик волатильности. Лучшее время!' },
+  ],
+  america: [
+    { h: 16, strength: 85, desc: 'Открытие NYSE. Мощный старт.' },
+    { h: 17, strength: 95, desc: '🔥 Перекрытие с Европой. Максимум!' },
+    { h: 18, strength: 90, desc: '🔥 Высочайшая волатильность.' },
+    { h: 19, strength: 80, desc: 'Европа закрылась. США продолжает.' },
+    { h: 20, strength: 75, desc: 'Устойчивые движения на NYSE.' },
+    { h: 21, strength: 70, desc: 'Активность постепенно снижается.' },
+    { h: 22, strength: 55, desc: 'Объёмы падают к закрытию.' },
+  ],
+};
+
+let currentDetailSession = null;
+
+function openSessionDetail(session) {
+  if (session.alwaysOpen) {
+    switchScreen('otc', document.querySelector('[data-screen=sessions]'));
+    return;
+  }
+  currentDetailSession = session;
+  renderSessionDetail(session);
+  switchScreen('session-detail', document.querySelector('[data-screen=sessions]'));
+}
+
+function renderSessionDetail(session) {
+  const mskMin = getMskMinutes();
+  const isOpen = mskMin >= session.open && mskMin < session.close && !isWeekend();
+  const hours = SESSION_HOURS[session.id] || [];
+
+  document.getElementById('detail-title').textContent = session.name.toUpperCase();
+  document.getElementById('detail-flag').textContent = session.flag;
+  document.getElementById('detail-name').textContent = session.name;
+  document.getElementById('detail-city').textContent = session.city + ' · UTC' + (session.tzOffset >= 0 ? '+' : '') + session.tzOffset;
+  document.getElementById('detail-hours').textContent = mskRangeToLocal(session.open, session.close) + ' · ' + localTzLabel();
+
+  // Clock
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const local = new Date(utc + session.tzOffset * 3600000);
+  document.getElementById('detail-clock').textContent = pad(local.getHours()) + ':' + pad(local.getMinutes());
+  document.getElementById('detail-clock').style.color = isOpen ? session.color : 'rgba(255,255,255,0.3)';
+  document.getElementById('detail-status').textContent = isWeekend() ? 'ВЫХОДНОЙ' : (isOpen ? 'ОТКРЫТА' : 'ЗАКРЫТА');
+
+  // Header card color
+  const hCard = document.getElementById('detail-header-card');
+  hCard.style.background = isOpen ? session.colorBg : 'var(--card)';
+  hCard.style.borderColor = isOpen ? session.colorBorder : 'rgba(255,255,255,0.07)';
+
+  // Current strength
+  const curHour = getMskNow().getHours();
+  const curHourData = hours.find(h => h.h === curHour);
+  const curStrength = isOpen && curHourData ? curHourData.strength : 0;
+  const bar = document.getElementById('detail-strength-bar');
+  bar.style.width = curStrength + '%';
+  bar.style.background = `linear-gradient(90deg, ${session.color}, ${session.color}88)`;
+  document.getElementById('detail-strength-val').textContent = curStrength + '%';
+  document.getElementById('detail-strength-val').style.color = session.color;
+
+  // Hours list
+  const list = document.getElementById('detail-hours-list');
+  list.innerHTML = '';
+  hours.forEach(h => {
+    const isCur = getMskNow().getHours() === h.h && isOpen;
+    const isPast = mskMin > (h.h * 60 + 59) && isOpen;
+    const bars = Math.round(h.strength / 10);
+    const card = document.createElement('div');
+    card.style.cssText = `background:${isCur ? 'rgba(255,255,255,0.05)' : 'var(--card)'};border:1px solid ${isCur ? session.color+'55' : 'rgba(255,255,255,0.07)'};border-radius:16px;padding:14px 16px;margin-bottom:8px;${isCur ? 'box-shadow:0 0 20px '+session.color+'22' : ''}`;
+    const strengthBars = Array.from({length:10}, (_,i) =>
+      `<div style="width:100%;height:8px;border-radius:2px;background:${i < bars ? (isPast ? 'rgba(255,255,255,0.1)' : session.color) : 'rgba(255,255,255,0.06)'}"></div>`
+    ).join('');
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:${isPast ? 'rgba(255,255,255,0.3)' : '#fff'};line-height:1">${mskToLocal(h.h*60)} — ${mskToLocal((h.h+1)*60)}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,${isPast ? '0.3' : '0.5'});margin-top:2px">${h.desc}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${isPast ? 'rgba(255,255,255,0.2)' : session.color};line-height:1">${h.strength}%</div>
+          <div style="font-size:9px;font-family:'Space Mono',monospace;color:var(--muted)">${isCur ? '● сейчас' : (isPast ? 'прошло' : 'ожидается')}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(10,1fr);gap:2px">${strengthBars}</div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function updateDetailClock() {
+  if (currentDetailSession) {
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const local = new Date(utc + currentDetailSession.tzOffset * 3600000);
+    const el = document.getElementById('detail-clock');
+    if (el) el.textContent = pad(local.getHours()) + ':' + pad(local.getMinutes()) + ':' + pad(local.getSeconds());
+  }
+}
+
+const SEASONS = [
+  { months: [1,2], name: 'Зима', char: 'АКТИВНЫЙ', charSub: 'хорошие объёмы', desc: 'Январь–февраль традиционно активны. Институциональные игроки возвращаются после праздников, формируются тренды на год.', color: '#60a5fa', end: [2,28] },
+  { months: [3,4,5], name: 'Весна', char: 'СИЛЬНЫЙ', charSub: 'рост объёмов', desc: 'Один из лучших периодов. Рынки активны, тренды устойчивы. Март–апрель особенно сильны для акций и Forex.', color: '#34d399', end: [5,31] },
+  { months: [6,7,8], name: 'Лето', char: 'СЛАБЫЙ', charSub: 'низкие объёмы', desc: '«Sell in May and go away». Крупные игроки в отпусках, объёмы снижены на 20–30%. Резкие движения на малой ликвидности.', color: '#fbbf24', end: [8,31] },
+  { months: [9,10,11], name: 'Осень', char: 'СИЛЬНЫЙ', charSub: 'лучший сезон', desc: 'Лучший период года! Сентябрь–октябрь: институционалы возвращаются, высокие объёмы, сильные тренды.', color: '#f97316', end: [11,30] },
+  { months: [12], name: 'Декабрь', char: 'СЛАБЫЙ', charSub: 'предпраздничный', desc: 'Объёмы снижаются перед Рождеством и Новым годом. Неожиданные движения из-за низкой ликвидности.', color: '#a78bfa', end: [12,31] },
+];
+
+const MONTH_NAMES = ['Я','Ф','М','А','М','И','И','А','С','О','Н','Д'];
+const DAY_NAMES = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+
+// ===== HELPERS =====
+function getMskNow() {
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  return new Date(utc + 3 * 3600000); // Moscow UTC+3
+}
+
+function getUserNow() {
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  return new Date(utc + userOffset * 3600000);
+}
+
+function getMskMinutes() {
+  const msk = getMskNow();
+  return msk.getHours() * 60 + msk.getMinutes();
+}
+
+function isWeekend() {
+  const msk = getMskNow();
+  const day = msk.getDay();
+  // Saturday after 23:00 Friday (Moscow) through Sunday 23:59
+  if (day === 6 || day === 0) return true;
+  return false;
+}
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function formatCountdown(mins) {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h > 0) return `${h}ч ${pad(m)}м`;
+  return `${m}м`;
+}
+
+function getSessionStatus(session) {
+  const mskMin = getMskMinutes();
+  const open = session.open;
+  const close = session.close;
+  const isOpen = mskMin >= open && mskMin < close;
+  let remain = '';
+  if (isOpen) {
+    remain = formatCountdown(close - mskMin);
+    return { open: true, label: 'ОТКРЫТА', remain: `осталось ${remain}` };
+  } else {
+    const minsToOpen = mskMin < open ? open - mskMin : (24 * 60 - mskMin + open);
+    remain = formatCountdown(minsToOpen);
+    return { open: false, label: 'ЗАКРЫТА', remain: `откр. через ${remain}` };
+  }
+}
+
+function getCurrentStage() {
+  const m = getMskMinutes();
+  const weekend = isWeekend();
+  if (weekend) return STAGES[0];
+
+  const asiaOpen = m >= 120 && m < 660;   // 02:00-11:00
+  const eurOpen  = m >= 600 && m < 1140;  // 10:00-19:00
+  const usaOpen  = m >= 990 && m < 1380;  // 16:30-23:00
+
+  if (asiaOpen && eurOpen) return STAGES[3]; // Asia+Europe overlap
+  if (eurOpen && usaOpen)  return STAGES[4]; // Europe+USA overlap
+  if (usaOpen)             return STAGES[5]; // USA only
+  if (eurOpen)             return STAGES[2]; // Europe only
+  if (asiaOpen)            return STAGES[1]; // Asia only
+  return STAGES[0]; // Night
+}
+
+function getCurrentSeason() {
+  const month = getMskNow().getMonth() + 1;
+  return SEASONS.find(s => s.months.includes(month)) || SEASONS[0];
+}
+
+function getDaysLeft() {
+  const season = getCurrentSeason();
+  const now = getMskNow();
+  const endDate = new Date(now.getFullYear(), season.end[0] - 1, season.end[1]);
+  const diff = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+  return Math.max(0, diff);
+}
+
+function getNextSeason() {
+  const cur = getCurrentSeason();
+  const idx = SEASONS.indexOf(cur);
+  return SEASONS[(idx + 1) % SEASONS.length];
+}
+
+// ===== RENDER =====
+function getSessionLocalTime(session) {
+  if (session.alwaysOpen) return '24/7';
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const local = new Date(utc + session.tzOffset * 3600000);
+  return pad(local.getHours()) + ':' + pad(local.getMinutes());
+}
+
+function renderSessions() {
+  const list = document.getElementById('sessions-list');
+  list.innerHTML = '';
+  SESSIONS.forEach(s => {
+    const isOpen = s.alwaysOpen ? true : (getSessionStatus(s).open && !isWeekend());
+    const status = s.alwaysOpen ? { open: true, label: 'ОТКРЫТА', remain: 'круглосуточно' } : getSessionStatus(s);
+    const localTime = getSessionLocalTime(s);
+    const item = document.createElement('div');
+    item.className = 'session-item';
+    item.style.cursor = 'pointer';
+    item.onclick = () => openSessionDetail(s);
+    if (isOpen) {
+      item.style.borderColor = s.colorBorder;
+      item.style.background = s.colorBg;
+    }
+    const tzSign = s.tzOffset >= 0 ? '+' : '';
+    const tzLabel = s.alwaysOpen ? 'все рынки · без выходных' : `${s.city} · UTC${tzSign}${s.tzOffset}`;
+    const hoursLabel = s.alwaysOpen ? '00:00 — 24:00 · 7 дней' : `${pad(Math.floor(s.open/60))}:${pad(s.open%60)} — ${pad(Math.floor(s.close/60))}:${pad(s.close%60)} МСК`;
+    const showWeekend = !s.alwaysOpen && isWeekend();
+    item.innerHTML = `
+      <div class="session-flag">${s.flag}</div>
+      <div class="session-info">
+        <div class="session-name">${s.name}</div>
+        <div class="session-city">${tzLabel}</div>
+        <div class="session-hours">${mskRangeToLocal(s.open, s.close)} · ${localTzLabel()}</div>
+      </div>
+      <div class="session-right">
+        <div class="session-mini-clock" id="mini-clock-${s.id}" style="color:${isOpen ? s.color : 'rgba(255,255,255,0.3)'}">${localTime}</div>
+        <div class="sess-status" style="background:${showWeekend ? 'rgba(255,255,255,0.05)' : (isOpen ? s.colorBg.replace('0.08','0.2') : 'rgba(255,255,255,0.05)')}; color:${showWeekend ? '#555' : (isOpen ? s.color : '#555')}">
+          ${showWeekend ? 'ВЫХОДНОЙ' : status.label}
+        </div>
+        <div class="sess-remain" style="font-size:10px">${showWeekend ? '—' : status.remain}</div>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function renderStage() {
+  const stage = getCurrentStage();
+  const card = document.getElementById('stage-card');
+  card.style.background = `linear-gradient(135deg, ${stage.colorBg}, ${stage.colorBg.replace('0.1','0.03')})`;
+  card.style.borderColor = stage.colorBorder;
+
+  document.getElementById('stage-glow').style.background = `radial-gradient(circle, ${stage.colorBg.replace('0.1','0.25')}, transparent 70%)`;
+  document.getElementById('stage-name').textContent = stage.name;
+  document.getElementById('stage-desc').textContent = stage.desc;
+
+  const badge = document.getElementById('strength-badge');
+  badge.textContent = stage.badge;
+  badge.style.background = stage.badgeBg;
+  badge.style.color = stage.badgeColor;
+  badge.style.borderColor = stage.badgeBg.replace('0.2','0.4');
+
+  const fill = document.getElementById('str-fill');
+  fill.style.width = stage.strength + '%';
+  fill.style.background = `linear-gradient(90deg, ${stage.color}, ${stage.color}88)`;
+
+  document.getElementById('str-val').style.color = stage.color;
+  document.getElementById('str-val').textContent = stage.strength + '%';
+}
+
+function renderClock() {
+  const user = getUserNow();
+  const h = pad(user.getHours());
+  const m = pad(user.getMinutes());
+  const s = pad(user.getSeconds());
+  document.getElementById('clock-main').textContent = `${h}:${m}:${s}`;
+  document.getElementById('clock-tz').textContent = `${userName} · UTC+${userOffset}`;
+  document.getElementById('date-day').textContent = DAY_NAMES[user.getDay()];
+  document.getElementById('date-full').textContent = `${pad(user.getDate())}.${pad(user.getMonth()+1)}.${user.getFullYear()}`;
+}
+
+function renderTimeline() {
+  const msk = getMskNow();
+  const totalMins = msk.getHours() * 60 + msk.getMinutes();
+  const pct = (totalMins / (24 * 60)) * 100;
+  document.getElementById('tl-cursor').style.left = pct + '%';
+}
+
+function renderWeekend() {
+  document.getElementById('weekend-banner').style.display = isWeekend() ? 'flex' : 'none';
+}
+
+function renderSeason() {
+  const s = getCurrentSeason();
+  const next = getNextSeason();
+  document.getElementById('season-name').textContent = s.name;
+  document.getElementById('season-name').style.color = s.color;
+  document.getElementById('season-dates').textContent = `до ${s.end[1]}.${pad(s.end[0])}`;
+  document.getElementById('season-char').textContent = s.char;
+  document.getElementById('season-char-sub').textContent = s.charSub;
+  document.getElementById('season-desc').textContent = s.desc;
+  document.getElementById('days-left').textContent = getDaysLeft();
+  document.getElementById('next-season').textContent = next.name;
+  document.getElementById('next-season').style.color = next.color;
+  document.getElementById('next-season-sub').textContent = next.charSub;
+
+  // Months grid
+  const grid = document.getElementById('months-grid');
+  grid.innerHTML = '';
+  const curMonth = getMskNow().getMonth() + 1;
+  MONTH_NAMES.forEach((name, i) => {
+    const m = i + 1;
+    const cell = document.createElement('div');
+    cell.className = 'month-cell';
+    if (m === curMonth) {
+      cell.classList.add('current');
+    } else {
+      const season = SEASONS.find(s => s.months.includes(m));
+      if (season) {
+        if (season.name === 'Лето' || season.name === 'Декабрь') cell.classList.add('season-low');
+        else if (season.name === 'Зима') cell.classList.add('season-active');
+        else cell.classList.add('season-summer');
+      }
+    }
+    cell.innerHTML = `${name}<div class="month-dot"></div>`;
+    grid.appendChild(cell);
+  });
+}
+
+// ===== UPDATE LOOP =====
+function update() {
+  renderClock();
+  renderStage();
+  renderSessions();
+  renderPeriods();
+  renderOtcPeriods();
+  renderOtcState();
+  renderTimeline();
+  renderWeekend();
+  updateDetailClock();
+}
+
+// ===== NAV =====
+function switchScreen(name, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  if (btn && btn.classList && btn.classList.contains('nav-btn')) btn.classList.add('active');
+  if (name === 'season') renderSeason();
+  if (name === 'otc') renderOtcPeriods();
+}
+
+// ===== TIMEZONE =====
+document.getElementById('tz-selector').addEventListener('click', function(e) {
+  const btn = e.target.closest('.tz-btn');
+  if (!btn) return;
+  document.querySelectorAll('.tz-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  userOffset = parseInt(btn.dataset.offset);
+  userName = btn.dataset.name;
+  renderClock();
+});
+
+// ===== INIT =====
+initGeoTime();
+update();
+setInterval(update, 1000);
+
+// ===== SOUND & NOTIFICATIONS =====
+let lastNotifiedSession = null;
+let lastNotifiedPeriod = null;
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playSignal(type) {
+  try {
+    const ctx = getAudioCtx();
+    const notes = type === 'strong'
+      ? [523, 659, 784, 1047] // до-ми-соль-до (мажор)
+      : [440, 523, 440];       // простой сигнал
+
+    let time = ctx.currentTime;
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.3, time + i * 0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + i * 0.15 + 0.4);
+      osc.start(time + i * 0.15);
+      osc.stop(time + i * 0.15 + 0.4);
+    });
+  } catch(e) {}
+}
+
+function sendNotification(title, body) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(title, { body, icon: '' });
+  }
+}
+
+function requestNotificationPermission() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
+
+function checkAlerts() {
+  const mskMin = getMskMinutes();
+  const msk = getMskNow();
+  const seconds = msk.getSeconds();
+  if (seconds !== 0) return; // only check at :00
+
+  // Check session openings
+  SESSIONS.forEach(s => {
+    if (s.alwaysOpen) return;
+    if (mskMin === s.open) {
+      const key = s.id + '-' + msk.toDateString();
+      if (lastNotifiedSession !== key) {
+        lastNotifiedSession = key;
+        const isStrong = s.id === 'europe' || s.id === 'america';
+        playSignal(isStrong ? 'strong' : 'normal');
+        sendNotification('🔔 ' + s.name + ' открылась', s.city + ' · ' + pad(Math.floor(s.open/60)) + ':' + pad(s.open%60) + ' МСК');
+      }
+    }
+  });
+
+  // Check overlap periods
+  if (mskMin === 10 * 60) { // Europe+Asia overlap
+    const key = 'overlap-ea-' + msk.toDateString();
+    if (lastNotifiedPeriod !== key) {
+      lastNotifiedPeriod = key;
+      playSignal('strong');
+      sendNotification('⚡ Азия + Европа', 'Перекрытие сессий — повышенная активность');
+    }
+  }
+  if (mskMin === 16 * 60 + 30) { // Europe+USA overlap
+    const key = 'overlap-eu-' + msk.toDateString();
+    if (lastNotifiedPeriod !== key) {
+      lastNotifiedPeriod = key;
+      playSignal('strong');
+      sendNotification('🔥 Европа + США', 'Лучший период! Максимальные объёмы');
+    }
+  }
+}
+
+setInterval(checkAlerts, 1000);
+
+// Update alerts screen toggle to request permission
+document.querySelectorAll('.toggle').forEach(t => {
+  t.addEventListener('click', () => {
+    requestNotificationPermission();
+  });
+});
+
+// Show permission request button in alerts if needed
+setTimeout(() => {
+  const alertsContent = document.querySelector('.alerts-content');
+  if (alertsContent && 'Notification' in window && Notification.permission !== 'granted') {
+    const btn = document.createElement('button');
+    btn.style.cssText = 'width:100%;padding:14px;background:rgba(0,230,118,0.15);border:1px solid rgba(0,230,118,0.3);border-radius:14px;color:#00e676;font-family:"Space Mono",monospace;font-size:12px;cursor:pointer;margin-bottom:16px';
+    btn.textContent = '🔔 Разрешить уведомления';
+    btn.onclick = () => {
+      Notification.requestPermission().then(p => {
+        if (p === 'granted') btn.textContent = '✅ Уведомления включены';
+      });
+      getAudioCtx(); // unlock audio
+      playSignal('normal');
+    };
+    alertsContent.insertBefore(btn, alertsContent.firstChild);
+  }
+}, 500);
+
+</script>
+</body>
+</html>
